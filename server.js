@@ -1,75 +1,88 @@
+const cors = require('cors');
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server);
-const { environment } = require("./environment.js");
+const { environment } = require("./models/environment.js");
+const { environmentService } = require("./services/environmentService");
 
+const io = new Server(server,{
+    cors: {
+      origin: "http://localhost:8080",
+      methods: ["GET", "POST"]
+    }
+  });
+
+app.use(cors());
 app.get('/', (req, res) => {
   res.send('<h1>Hello world</h1>');
 });
 
-let environments = [];
+let envSevice = new environmentService();
+
 io.on('connection', (socket) => {
     socket.on('queue', (call) => {
-        let env = environments.find(o => o.id == call.env);
-        let ticket = env.addTicketToQueue(call.placeid, call.text);
-        io.emit('print',ticket)
+        console.log('queue',call)
+        let env = envSevice.getEnvironment(call.env);
         io.emit('call', env);
     });
 
+    socket.on('print', (call) => {
+        let env = envSevice.getEnvironment(call.env);
+        let ticket = env.addTicketToQueue(call.placeid, call.text);
+        console.log('print',call)
+        io.emit('print',ticket)
+    });
+
     socket.on('call', (call) => {
-        let env = environments.find(o => o.id == call.env);
+        let env = envSevice.getEnvironment(call.env);
         env.callTicket(call.id, call.nomeCliente)
+        console.log('call',call)
         io.emit('call', env);
     });
 
     socket.on('dropCall', (call) => {
-        let env = environments.find(o => o.id == call.env);
+        let env = envSevice.getEnvironment(call.env);
         env.dropCall(call.id)
         io.emit('call', env);
     });
     
     socket.on('createEnv', (envData) => {
         if(envData.id){
-            let index = environments.findIndex(o => o.id == envData.id);
-            if(index>=0)
+            let env = envSevice.getEnvironment(envData.id);
+            if(env)
             {
-                environments[index].url = envData.url
-                environments[index].name = envData.name
-                environments[index].places = envData.places
+                envSevice.editEnvironment(envData)
             }
         }else{
-            let env = new environment(envData.name)
-            env.url = envData?.url || "";
-
-            if (envData?.places) {
-                envData?.places.forEach(el => {
-                    env.addPlace(el.name, el.type);
-                });
-            }
-            environments.unshift(env);
+            envSevice.createEnvironment(
+                envData.name,
+                envData?.url,
+                envData?.places,
+                envData?.layout,
+                envData?.theme
+                );
         }
-        io.emit('createEnv', environments);
+        io.emit('createEnv', envSevice.getAllEnvironment());
     });
 
     socket.on('listEnv', (envName) => {
-        socket.emit('listEnv', environments);
+        socket.emit('listEnv', envSevice.getAllEnvironment());
     });
 
     socket.on('initTotem', (envid) => {
-        let env = environments.find(o => o.id == envid);
+        let env = envSevice.getEnvironment(envid);
         socket.emit('initTotem', { places: env.places, envName:env.name });
     });
 
     socket.on('initWaitRoom', (envid) => {
-        let env = environments.find(o => o.id == envid);
+        let env = envSevice.getEnvironment(envid);
         socket.emit('initWaitRoom', env);
     });
 
     socket.on('initAtendente', (envid) => {
-        let env = environments.find(o => o.id == envid);
+        let env = envSevice.getEnvironment(envid);
         socket.emit('call', env);
     });
 });
@@ -80,7 +93,7 @@ server.listen(3000, () => {
     env.addPlace("primeiro andar", "A1");
     env.addPlace("segundo andar", "A2");
     env.addPlace("cobertura", "CB");
-    environments.push(env);
+    envSevice.addEnvironment(env);
 
     console.log('listening on *:3000');
     console.log('http://localhost:3000/');
