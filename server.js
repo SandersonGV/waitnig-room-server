@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
     });
 });
 server.listen(3000, () => {
-    let env = new environment("teste");
+    let env = new environment("tony tony chopper clinic");
     env.url ="https://animesher.com/orig/1/112/1123/11230/animesher.com_kawaii-tony-tony-chopper-one-piece-1123098.gif"
     env.addPlace("salão", "SL");
     env.addPlace("primeiro andar", "A1");
