@@ -37,6 +37,8 @@ let environmentService = class {
             this.environments[index].url = env.url
             this.environments[index].name = env.name
             this.environments[index].places = env.places
+            this.environments[index].layout = env.layout
+            this.environments[index].theme = env.theme
         }
     }
 
@@ -46,6 +48,19 @@ let environmentService = class {
             this.environments.splice(index, 1);
         }
     }
+
+    addTicketToQueue = (call) => {
+        let index = this.environments.findIndex(o => o.id == call.env);
+        let ticket = this.environments[index].addTicketToQueue(call.placeid, call.text);
+        return ticket;
+    }
+
+    callTicket = (call)=>{
+        let index = this.environments.findIndex(o => o.id == call.env);
+        this.environments[index].callTicket(call.id, call.nomeCliente);
+        return this.environments[index];
+    }
+
 }
 
 

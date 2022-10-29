@@ -24,21 +24,16 @@ let envSevice = new environmentService();
 io.on('connection', (socket) => {
     socket.on('queue', (call) => {
         console.log('queue',call)
+        let ticket = envSevice.addTicketToQueue(call);
         let env = envSevice.getEnvironment(call.env);
+        console.log('29',call)
+        socket.emit('print',ticket)
         io.emit('call', env);
     });
 
-    socket.on('print', (call) => {
-        let env = envSevice.getEnvironment(call.env);
-        let ticket = env.addTicketToQueue(call.placeid, call.text);
-        console.log('print',call)
-        io.emit('print',ticket)
-    });
-
     socket.on('call', (call) => {
-        let env = envSevice.getEnvironment(call.env);
-        env.callTicket(call.id, call.nomeCliente)
-        console.log('call',call)
+        let env = envSevice.callTicket(call);
+        console.log('37',call)
         io.emit('call', env);
     });
 
@@ -51,6 +46,7 @@ io.on('connection', (socket) => {
     socket.on('createEnv', (envData) => {
         if(envData.id){
             let env = envSevice.getEnvironment(envData.id);
+            console.log(env)
             if(env)
             {
                 envSevice.editEnvironment(envData)
@@ -64,6 +60,7 @@ io.on('connection', (socket) => {
                 envData?.theme
                 );
         }
+        
         io.emit('createEnv', envSevice.getAllEnvironment());
     });
 
@@ -93,6 +90,13 @@ server.listen(3000, () => {
     env.addPlace("primeiro andar", "A1");
     env.addPlace("segundo andar", "A2");
     env.addPlace("cobertura", "CB");
+    env.layout = {id:3,nome:"somente numero", recentCalls:1, lastCalls:0};
+    env.theme = {
+        "cor1": "#efe6e6",
+        "cor2": "#ee9b9b",
+        "cor3": "#ee4f4f",
+        "cor4": "#ff0000"
+    };
     envSevice.addEnvironment(env);
 
     console.log('listening on *:3000');
