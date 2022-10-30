@@ -5,7 +5,7 @@ let environment = class {
         this.calls = [];
         this.queue = [];
         this.places = [];
-        this.url = "";
+        this.media = {};
         this.data = new Date();
     }
 

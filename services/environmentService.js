@@ -34,7 +34,7 @@ let environmentService = class {
         let index = this.environments.findIndex(o => o.id == env.id);
         if(index>=0)
         {
-            this.environments[index].url = env.url
+            this.environments[index].media = env.media
             this.environments[index].name = env.name
             this.environments[index].places = env.places
             this.environments[index].layout = env.layout
