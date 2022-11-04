@@ -23,7 +23,6 @@ let envSevice = new environmentService();
 
 io.on('connection', (socket) => {
     socket.on('queue', (call) => {
-        console.log('queue',call)
         let ticket = envSevice.addTicketToQueue(call);
         let env = envSevice.getEnvironment(call.env);
         
@@ -35,7 +34,6 @@ io.on('connection', (socket) => {
 
     socket.on('call', (call) => {
         let env = envSevice.callTicket(call);
-        console.log('37',call)
         io.emit('call', env);
         io.emit('updatecall', env);
     });
@@ -49,7 +47,6 @@ io.on('connection', (socket) => {
     socket.on('createEnv', (envData) => {
         if(envData.id){
             let env = envSevice.getEnvironment(envData.id);
-            console.log(env)
             if(env)
             {
                 envSevice.editEnvironment(envData)
