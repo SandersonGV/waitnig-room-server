@@ -13,9 +13,9 @@ let environmentService = class {
         return this.environments.find(o => o.id == id);
     }
 
-    createEnvironment = (name,url,places,layout, theme) =>{
+    createEnvironment = (name,media,places,layout, theme) =>{
         let env = new environment(name)
-        env.url = url || "";
+        env.media = media || "";
         env.layout =  layout || "";
         env.theme =  theme || "";
         if (places) {
